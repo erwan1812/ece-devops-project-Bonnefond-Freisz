@@ -22,6 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.4.0
+        with:
+            redis-version: ${{ matrix.redis-version }}
       - name: Set up Node.js version
         uses: actions/setup-node@v1
         with:
@@ -59,6 +63,7 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7310E6DCC2614241A7CEB7B5BDE4A9F0 }}
           package: .
+          appdir: userapi
 
 
   
