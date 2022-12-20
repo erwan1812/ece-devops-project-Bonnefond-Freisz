@@ -70,7 +70,6 @@ describe('User', () => {
   //     // 2. Then, check if the result of the get method is correct
   //     done()
   //   })
-  //
   //   it('cannot get a user when it does not exist', (done) => {
   //     // Chech with any invalid user
   //     done()
@@ -105,7 +104,7 @@ describe('User', () => {
       userController.get('invalid', (err, result) => {
         expect(err).to.not.be.equal(null)
         expect(result).to.be.equal(null)
-        done()
+        done() 
       })
     })
   
