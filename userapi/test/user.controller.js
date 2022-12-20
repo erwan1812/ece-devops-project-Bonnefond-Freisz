@@ -13,9 +13,9 @@ describe('User', () => {
 
     it('create a new user', (done) => {
       const user = {
-        username: 'sergkudinov',
-        firstname: 'Sergei',
-        lastname: 'Kudinov'
+        username: 'erwanb',
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
       }
       userController.create(user, (err, result) => {
         expect(err).to.be.equal(null)
@@ -26,8 +26,8 @@ describe('User', () => {
 
     it('passing wrong user parameters', (done) => {
       const user = {
-        firstname: 'Sergei',
-        lastname: 'Kudinov'
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
       }
       userController.create(user, (err, result) => {
         expect(err).to.not.be.equal(null)
@@ -44,9 +44,9 @@ describe('User', () => {
   
     it('avoid creating an existing user', (done)=> {
       const user = {
-        username: 'sergkudinov',
-        firstname: 'Sergei',
-        lastname: 'Kudinov'
+        username: 'erwanb',
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
       }
       // Create a user
       userController.create(user, () => {
@@ -83,9 +83,9 @@ describe('User', () => {
 
     it('get a user by username', (done) => {
       const user = {
-        username: 'sergkudinov',
-        firstname: 'Sergei',
-        lastname: 'Kudinov'
+        username: 'erwanb',
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
       }
       // Create a user
       userController.create(user, () => {
@@ -93,8 +93,8 @@ describe('User', () => {
         userController.get(user.username, (err, result) => {
           expect(err).to.be.equal(null)
           expect(result).to.be.deep.equal({
-            firstname: 'Sergei',
-            lastname: 'Kudinov'
+            firstname: 'Erwan',
+            lastname: 'Bonnefond',
           })
           done()
         })
