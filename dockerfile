@@ -1,11 +1,17 @@
-FROM node:14.17.5-alpine
+FROM node:14-alpine
 
+# Create app directory
 WORKDIR /usr/src/app
 
-COPY userapi . 
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
 
 RUN npm install
 
-EXPOSE 3000
+# Bundle app source
+COPY userapi .
 
+EXPOSE 3000
 CMD [ "npm", "start" ]

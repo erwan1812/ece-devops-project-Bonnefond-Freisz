@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-redis
+  template:
+    metadata:
+      labels:
+        app: devops-redis
+    spec:
+      containers:
+      - name: devops-redis
+        image: redis
+        ports:
+        - containerPort: 6379
