@@ -1,0 +1,28 @@
+version: "3"
+
+networks:
+  app-network:
+
+services:
+  redis:
+    hostname: redis
+    image: redis:6.0.8
+    restart: always
+    container_name: redis
+    ports:
+      - "6380:6379"
+    networks:
+        - app-network    
+  app:
+    hostname: app
+    image: erwan1812/my-node-app:latest
+    container_name: app
+    build: .
+    ports:
+      - "3002:3000"
+    restart: on-failure
+    depends_on:
+      - redis 
+    networks:
+      - app-network 
+
