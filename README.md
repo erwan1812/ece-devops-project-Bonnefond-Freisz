@@ -113,16 +113,17 @@ touch dockerfile
 Puis on implémente notre fichier docker file avec les lignes de codes ci-dessous :
 
 ```dockerfile
-FROM node:14.17.5-alpine
+FROM node:14-alpine
 
 WORKDIR /usr/src/app
 
-COPY userapi . 
+COPY package*.json ./
 
 RUN npm install
 
-EXPOSE 3000
+COPY userapi .
 
+EXPOSE 3000
 CMD [ "npm", "start" ]
 ```
 
@@ -131,8 +132,7 @@ Avec ce fichier on pourra initialiser et configurer les paramètres de notre `Do
 Ensuite pour **Build** notre **Docker Image** on devra effectuer la commande suivante sur le terminal.
 
 ```bash
-#docker build -t <docker-account-name>/<custom-image-name> .
-docker build -t erwan1812/devops-project .
+docker build -t my-node-app .
 ```
 
 Une fois que le **Build** est réussi il ne reste plus qu'à `push` notre **Docker Image** directement sur **Docker hub**.
@@ -148,7 +148,7 @@ Elle nous permettra d'avoir accès à notre compte et par la suite de pouvoir r�
 On utilise ensuite cette commande :
 
 ```bash
-docker tag erwan1812/devops-project erwan1812/devops-project
+docker tag 
 ```
 
 Afin de nommer notre `Image`.
@@ -156,9 +156,89 @@ Afin de nommer notre `Image`.
 Et pour finir il ne nous reste plus qu'à utiliser la commande **push**.
 
 ```bash
-docker push erwan1812/devops-project
+docker push erwan1812/my-node-app
 ```
 
 On peut voir que la manipulation a fonctionnée est que l'image est bien dans notre **Docker Hub**.
 
 ![image](image/4.png)
+
+## 5. `Container Orchestration` en utilisant `Docker Compose`
+
+On a créée un fichier `docker-compose.yml`, on y a définit notre app et redis.
+
+```yaml
+services:
+  redis:
+    hostname: redis
+    image: redis:6.0.8
+    restart: always
+    container_name: redis
+    ports:
+      - "6380:6379"
+    networks:
+        - app-network    
+  app:
+    hostname: app
+    image: erwan1812/my-node-app:latest
+    container_name: app
+    build: .
+    ports:
+      - "3002:3000"
+    restart: on-failure
+    depends_on:
+      - redis 
+    networks:
+      - app-network 
+```
+
+On pourra gérer l'ensemble de nos services que ce soit **redis** ou notre **app**.
+
+Grâce à docker-compose on pourra tester notre app en local.
+
+On pourra l'executer avec cette commande :
+
+```bash
+docker-compose up
+```
+
+On peut observer que notre application s'est bien lancé.
+
+![image](image/8.png)
+
+## 6. `Docker Orchestration` en utilisant `Kubernete`
+
+On a commencé par créer un dossier [kubernete](kubernete/) dans lequel on a renseigner nos fichiers `deployments` et `services`.
+
+Ensuite, on a lancé **Minikube**:
+
+```bash
+minikube start
+```
+
+Puis, à l'aide de la commande kubectl on lui a appliqué nos fichiers `deployments`et `services`:
+
+```bash
+kubectl apply -f kubernete/deployments
+kubectl apply -f kubernete/services
+```
+
+Pour trouver le nom du service on a exécuté la commande ci-dessous:
+
+```bash
+kubectl get svc
+```
+
+![image](image/5.png)
+
+Et enfin, il ne nous reste plus qu'à le démarrer :
+
+```bash
+minikube service my-node-app
+```
+
+![image](image/6.png)
+
+On peut que deploiement avec kubernete est un succés :
+
+![image](image/7.png)
