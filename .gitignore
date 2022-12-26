@@ -4,3 +4,4 @@ node_modules
 !.gitignore
 !.eslintignore
 !.eslintrc.json
+!.dockerignore
