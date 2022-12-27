@@ -1,0 +1,30 @@
+---
+
+- hosts: all
+
+  tasks: 
+    - name: install n
+      community.general.npm:
+          name: n
+          global: yes
+          
+    - name: Install node.js
+      apt:
+          name: nodejs
+          state: present
+
+    - name: Install npm
+      apt:
+        name: npm
+        state: present
+
+    - name: Install redis
+      apt:
+        name: redis-server
+        state: present
+
+    - name: Start redis server
+      service:
+        name: redis-server
+        state: started
+        enabled: yes

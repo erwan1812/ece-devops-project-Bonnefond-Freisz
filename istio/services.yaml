@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: devops-project-account
+  labels:
+    account: devops-project
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-project-service
+  labels:
+    app: devops-project
+    service: devops-project
+spec:
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+  selector:
+    app: devops-project
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-project-deployment
+spec:
+  selector:
+    matchLabels:
+      app: devops-project
+  template:
+    metadata:
+      labels:
+        app: devops-project
+    spec:
+      containers:
+      - name: my-service
+        image: erwan1812/my-node-app:latest
+        ports:
+        - containerPort: 8080
+
