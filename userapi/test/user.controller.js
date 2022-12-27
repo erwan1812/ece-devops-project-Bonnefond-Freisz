@@ -52,8 +52,6 @@ describe('User', () => {
         })
       })
     })
-
-
   })
 
   describe('Get', ()=> {
