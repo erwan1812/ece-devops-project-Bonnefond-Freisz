@@ -113,7 +113,7 @@ cd userapi
 npm run test
 ```
 
-On peut donc voir que tout nos test ce sont réalisés avec succès:
+On peut donc voir que tout nos test se sont réalisés avec succès:
 
 ![image](image/test.png)
 
@@ -276,7 +276,7 @@ Et pour finir il ne nous reste plus qu'à utiliser la commande **push**.
 docker push erwan1812/my-node-app
 ```
 
-On peut voir que la manipulation a fonctionnée est que l'image est bien dans notre **Docker Hub**.
+On peut voir que la manipulation a fonctionnée et que l'image est bien dans notre **Docker Hub**.
 
 ![image](image/4.png)
 
@@ -325,7 +325,7 @@ On peut observer que notre application s'est bien lancé.
 
 ## 6. `Docker Orchestration` en utilisant `Kubernete`
 
-On a commencé par créer un dossier [kubernete](kubernete/) dans lequel on a renseigner nos fichiers `deployments` et `services`.
+On a commencé par créer un dossier [kubernete](kubernete/) dans lequel on a renseigné nos fichiers `deployments` et `services`.
 
 Ensuite, on a lancé **Minikube**:
 
@@ -356,6 +356,6 @@ minikube service my-node-app
 
 ![image](image/6.png)
 
-On peut que deploiement avec kubernete est un succés :
+On peut voir que deploiement avec kubernete est un succès :
 
 ![image](image/7.png)
