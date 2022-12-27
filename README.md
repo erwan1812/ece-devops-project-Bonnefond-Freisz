@@ -59,7 +59,7 @@ En voici quelque exemple :
   })
 ```
 
-ou encore 
+ou encore
 
 ```js
 describe('GET /user', () => {
