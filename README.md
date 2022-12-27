@@ -1,5 +1,122 @@
 # ece-devops-project-Bonnefond-Freisz
 
+## 1. Créer une application Web
+
+Il s'agit d'une application nodejs qui stocke les données sur une base de données Redis.
+C'est une application implémentant une api avec une fonctionnalité d'utilisateurs CRUD.
+
+Ainsi qu'une base de donnée via Redis.
+
+Et toute une série de Tests.
+
+En voici quelque exemple :
+
+```js
+
+  describe('Create', () => {
+
+    it('create a new user', (done) => {
+      const user = {
+        username: 'erwanb',
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
+      }
+      userController.create(user, (err, result) => {
+        expect(err).to.be.equal(null)
+        expect(result).to.be.equal('OK')
+        done()
+      })
+    })
+
+    it('passing wrong user parameters', (done) => {
+      const user = {
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
+      }
+      userController.create(user, (err, result) => {
+        expect(err).to.not.be.equal(null)
+        expect(result).to.be.equal(null)
+        done()
+      })
+    })
+  
+    it('avoid creating an existing user', (done)=> {
+      const user = {
+        username: 'erwanb',
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
+      }
+      // Create a user
+      userController.create(user, () => {
+        // Create the same user again
+        userController.create(user, (err, result) => {
+          expect(err).to.not.be.equal(null)
+          expect(result).to.be.equal(null)
+          done()
+        })
+      })
+    })
+  })
+```
+
+ou encore 
+
+```js
+describe('GET /user', () => {
+    
+    it('get an existing user', (done) => {
+      const user = {
+        username: 'erwanb',
+        firstname: 'Erwan',
+        lastname: 'Bonnefond'
+      }
+      // Create a user
+      userController.create(user, () => {
+        // Get the user
+        chai.request(app)
+          .get('/user/' + user.username)
+          .then((res) => {
+            chai.expect(res).to.have.status(200)
+            chai.expect(res.body.status).to.equal('success')
+            chai.expect(res).to.be.json
+            done()
+          })
+          .catch((err) => {
+             throw err
+          })
+      })
+    })
+    
+    it('can not get a user when it does not exist', (done) => {
+      chai.request(app)
+        .get('/user/invalid')
+        .then((res) => {
+          chai.expect(res).to.have.status(400)
+          chai.expect(res.body.status).to.equal('error')
+          chai.expect(res).to.be.json
+          done()
+        })
+        .catch((err) => {
+           throw err
+        })
+    })
+  })
+```
+
+Pour vérifier que nos tests fonctionnent bien, il faut réaliser les commandes suivantes:
+
+```bash
+cd userapi
+```
+
+```bash
+npm run test
+```
+
+On peut donc voir que tout nos test ce sont réalisés avec succès:
+
+![image](image/test.png)
+
 ## 2. Appliquer le pipeline CI/CD
 
 ### 1. Pour la partie **continuous integration**, nous avons utilisés `GitHub Actions`
