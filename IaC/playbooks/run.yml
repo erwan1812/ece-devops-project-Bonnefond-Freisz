@@ -2,12 +2,7 @@
 
 - hosts: all
 
-  tasks: 
-    - name: install n
-      community.general.npm:
-          name: n
-          global: yes
-          
+  tasks:    
     - name: Install node.js
       apt:
           name: nodejs
@@ -23,8 +18,24 @@
         name: redis-server
         state: present
 
-    - name: Start redis server
-      service:
-        name: redis-server
-        state: started
-        enabled: yes
+    - name: Setup redis database on the server
+      command: chdir=/home/vagrant/redis-stable/src make install
+      become: true
+
+    - name: Install packages
+      ansible.builtin.shell: npm i
+      args:
+        chdir: /home/vagrant/userapi
+    
+    - name: Run redis database
+      command: redis-server
+    
+    - name: Test our app
+      ansible.builtin.shell: npm test
+      args: 
+        chdir: /home/vagrant/userapi
+
+    - name: Start our app
+      ansible.builtin.shell: npm start 
+      args: 
+        chdir: /home/vagrant/userapi

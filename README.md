@@ -9,7 +9,7 @@ Ainsi qu'une base de donnée via Redis.
 
 Et toute une série de Tests.
 
-En voici quelque exemple :
+En voici quelques exemples :
 
 ```js
 
@@ -121,8 +121,8 @@ On peut donc voir que tout nos test se sont réalisés avec succès:
 
 ### 1. Pour la partie **continuous integration**, nous avons utilisés `GitHub Actions`
 
-Nous avons commencés par créer un dossier `.github/workflows` à la racine de notre projet.
-En repartant du lab sur CI/CD pipeline nous avons implémentés le fichier `github-actions.yml`. Nous l'implémentons seulement pour notre branche main.
+Nous avons commencé par créer un dossier `.github/workflows` à la racine de notre projet.
+En repartant du lab sur CI/CD pipeline nous avons implémenté le fichier `github-actions.yml`. Nous l'implémentons seulement pour notre branche main.
 
 ```yml
 on:
@@ -173,14 +173,14 @@ steps:
 
 ### 2. Pour la partie **Continuous Deployment**, nous avons utilisés `Azure`
 
-On a commencé par créer un compte student qui nous permet d'avoir 100 crédits disponible sur le compte. Puis on a créer notre app en suivant le tutoriel du cours.
+On a commencé par créer un compte student qui nous permet d'avoir 100 crédits disponibles sur le compte. Puis on a créé notre app en suivant le tutoriel du cours.
 Notre applications est déployé sur : <https://project-devops-ece.azurewebsites.net/>
 
 ![image](image/2.png)
 
 Ci-dessus notre journal de bord de nos workflows, depuis notre application réalisé sur Azure.
 
-Une fois fait nous avons implémentés la partie deployment dans notre fichier `github-actions.yml`. Nous demandons dans cetter partie au serveur de vérifier si notre build(Continuous Integratio) fonctionne car il est nécessaire pour déclencher la partie deployment. (Build correspond à nos tests)
+Une fois fait nous avons implémenté la partie deployment dans notre fichier `github-actions.yml`. Nous demandons dans cette partie au serveur de vérifier si notre build(Continuous Integratio) fonctionne car il est nécessaire pour déclencher la partie deployment. (Build correspond à nos tests)
 
 ```yml
  deploy:
@@ -207,7 +207,7 @@ Une fois fait nous avons implémentés la partie deployment dans notre fichier `
           appdir: userapi
 ```
 
-Puis une fois que tout est bon. Il n'a plus qu`à le déployé sur azure.
+Puis une fois que tout est bon. Il suffit de le déployé sur azure.
 Ci dessous un exemple d'un workflow réussi.
 
 ![image](image/1.png)
@@ -215,6 +215,141 @@ Ci dessous un exemple d'un workflow réussi.
 ### Maintenant, dès que l'action d'un push ou d'un pull est déclenché un workflow se déclenche. Ci-dessous on peut voir un exemple que notre CI/CD pipeline se porte bien
 
 ![image](image/3.png)
+
+## 3.Configurer et approvisionner un environnement virtuel et exécuter votre application en utilisant l'approche IaC
+
+On a d'abord créé notre dossier IaC dans lequel nous avons initialisé un `Vagrantfile`.
+
+Dans ce fichier, nous avons indiqué quel type de serveur nous voulions utiliser ainsi qu'une adresse privée, un nombre de **RAM** et de **CPU**, puis un nom.
+
+```Vagrantfile
+Vagrant.configure("2") do |config|
+    # Do not pay attention to this parameter
+if Vagrant.has_plugin?("vagrant-vbguest")
+  config.vm.provider :virtualbox do |vb|
+    config.vbguest.auto_update = false
+  end
+end
+ 
+  # define a VM machine configuration
+  config.vm.define "project" do |server|
+    server.vm.box = "ubuntu/bionic64"
+     # Specify the VM ip address
+    server.vm.network "private_network", ip: "192.168.56.10"
+  
+   # Specify the VM specs when using the Virtualbox provisioner
+   server.vm.provider "virtualbox" do |vb|
+     vb.name =  "project.server.local"
+     # VM RAM in MB
+     vb.memory = 2048
+     # VM CPUs
+     vb.cpus = 1
+   end
+   config.vm.provider "vmware_desktop" do |vmware|
+     vmware.vmx["memsize"] = "2048"
+     vmware.vmx["numvcpus"] = "1"
+   end
+ end
+ config.vm.network "forwarded_port", guest: 3003, host: 3003
+ # Use Vagrant Ansible provisioner
+config.vm.provision "ansible_local" do |ansible|
+  # The path to the playbooks entry point
+  ansible.playbook = "playbooks/run.yml"
+
+end
+config.vm.synced_folder "../userapi", "/home/vagrant/userapi"
+
+end
+```
+
+Nous voulons fournir notre serveur avec `Ansible`. Nous avons donc créé un dossier playbooks dans lequel on a créé un fichier `run.yml` pour y indiquer toutes les taches que l'on veut réaliser.
+
+Dans notre cas on veut dans un premier temps:
+
+- Installer node.js, npm et redis
+  
+  ```yml
+    - name: Install node.js
+      apt:
+          name: nodejs
+          state: present
+
+    - name: Install npm
+      apt:
+        name: npm
+        state: present
+
+    - name: Install redis
+      apt:
+        name: redis-server
+        state: present
+  ```
+
+Puis dans un second temps:
+
+- Installer nos packages, configurer redis puis le run.
+
+```yml
+    - name: Setup redis database on the server
+      command: chdir=/home/vagrant/redis-stable/src make install
+      become: true
+
+    - name: Install packages
+      ansible.builtin.shell: npm i
+      args:
+        chdir: /home/vagrant/userapi
+    
+    - name: Run redis database
+      command: redis-server
+```
+
+Et pour finir:
+
+- Tester notre app puis l'éxecuter.
+  
+  ```yml
+    - name: Test our app
+      ansible.builtin.shell: npm test
+      args: 
+        chdir: /home/vagrant/userapi
+
+    - name: Start our app
+      ansible.builtin.shell: npm start 
+      args: 
+        chdir: /home/vagrant/userapi
+  ```
+
+Grâce à un `synced-folder`, nous pouvons synchroniser notre application à notre serveur.
+
+Pour lancer notre VM avec **vagrant**:
+
+```bash
+vagrant up
+```
+
+avec:
+
+```bash
+vagrant up
+```
+
+Nous pouvons vérifier que notre VM est bien lancée.
+
+![image](image/vagrant-status.png)
+
+Cependant, au moment d'approvisionner notre VM
+
+avec:
+
+```bash
+vagrant provision
+```
+
+On rencontre une erreur lié au **ssh**:
+
+![image](image/vagrant-provision.png)
+
+Une erreur que l'on a malheureusement pas su régler, malgré les différentes tentatives pour résoudre le problème.
 
 ## 4.**Build Docker Image** de notre application
 
@@ -276,13 +411,13 @@ Et pour finir il ne nous reste plus qu'à utiliser la commande **push**.
 docker push erwan1812/my-node-app
 ```
 
-On peut voir que la manipulation a fonctionnée et que l'image est bien dans notre **Docker Hub**.
+On peut voir que la manipulation a fonctionné et que l'image est bien dans notre **Docker Hub**.
 
 ![image](image/4.png)
 
 ## 5. `Container Orchestration` en utilisant `Docker Compose`
 
-On a créée un fichier `docker-compose.yml`, on y a définit notre app et redis.
+On a créé un fichier `docker-compose.yml`, on y a définit notre app et redis.
 
 ```yaml
 services:
@@ -359,3 +494,52 @@ minikube service my-node-app
 On peut voir que deploiement avec kubernete est un succès :
 
 ![image](image/7.png)
+
+## 7. Faire un service `mesh` en utilisant `istio`
+
+Dans cette partie nous créons un service **mesh** avec **istio**. Il fournit un moyen de sécuriser, de connecter et de surveiller les microservices.
+
+Après avoir installer `istio` en suivant l'[installation](https://istio.io/latest/docs/setup/getting-started/).
+
+Nous avons créés deux fichier : `gateway.yaml` et `services.yaml`.
+
+Il nous suffit ensuite de faire ces commandes pour les déployer:
+
+```bash
+
+## etre sur que minikube est lancé
+minikube start
+
+kubectl apply -f /istio/gateway.yml
+
+kubectl apply -f /istio/services.yml
+```
+
+Puis nous avons installé `Kiali`, via le [guide](https://kiali.io/docs/installation/quick-start/)
+
+Pour pouvoir se connecter à `kiali` il faut récupérer le token de connexion:
+
+```bash
+kubectl -n istio-system create token kiali-service-account
+```
+
+et après il suffira de lancer `kiali` sur son port:
+
+```bash
+kubectl port-forward svc/kiali -n istio-system 20001
+```
+
+On aura alors accès à notre [overview](http://localhost:20001/kiali/console/)
+
+![image](image/kiali.png)
+
+## Auteurs
+
+- [Henri Freisz](https://github.com/henrifreisz)
+  
+  [henri.freisz@edu.ece.fr](henri.freisz@edu.ece.fr)
+
+- [Erwan Bonnefond](https://github.com/erwan1812)
+
+  [erwan.bonnefond@edu.ece.fr](erwan.bonnefond@edu.ece.fr)
+  
